@@ -4,7 +4,7 @@ import "log"
 
 const (
 	ApplicationName    = "sbom"
-	ApplicationVersion = "0.2"
+	ApplicationVersion = "0.3"
 )
 
 func PrintSbom() {
