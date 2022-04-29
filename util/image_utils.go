@@ -110,7 +110,7 @@ func ReadImageManifest(tempDir string) (Manifest, error) {
 
 func ReadImageConfig(tempDir string, manifest Manifest) (v1.ConfigFile, error) {
 	configLocation := tempDir + "/" + manifest.Config
-	log.Println("Reading manifest: ", configLocation)
+	log.Println("Reading image config: ", configLocation)
 
 	content, err := ioutil.ReadFile(configLocation)
 	if err != nil {
@@ -131,14 +131,16 @@ func ExtractLayer(tempDir string, manifest Manifest) (string, error) {
 	source := tempDir + "/" + manifest.Layers[0]
 	target := tempDir + "/" + strings.Split(manifest.Layers[0], ".")[0] + "." + strings.Split(manifest.Layers[0], ".")[1]
 
-	err := UnGzip(source, target)
-	if err != nil {
-		log.Println("error while unzipping image: ", err.Error())
-		return "", err
+	if strings.Contains(source, ".gz") {
+		err := UnGzip(source, target)
+		if err != nil {
+			log.Println("error while unzipping image: ", err.Error())
+			return "", err
+		}
 	}
 
 	newDir := tempDir + "/" + strings.Split(manifest.Layers[0], ".")[0]
-	err = CreateDir(newDir)
+	err := CreateDir(newDir)
 	if err != nil {
 		log.Println("error while creating directory: ", err.Error())
 		return "", err

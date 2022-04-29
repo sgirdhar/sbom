@@ -31,9 +31,9 @@ Image name (with either tag or digest) or image tar can be passed as input`,
 		if tarFile == "" && len(args) == 0 {
 			return errors.New("accepts 1 arg, received 0")
 		}
-		if outputFormat == "" && len(args) == 0 {
-			return errors.New("accepts 1 arg, received 0")
-		}
+		// if outputFormat == "" && len(args) == 0 {
+		// 	return errors.New("accepts 1 arg, received 0")
+		// }
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
