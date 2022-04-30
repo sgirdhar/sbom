@@ -1,0 +1,7 @@
+package util
+
+func ListComp(identifiedPkgs, readPkgs []string) {
+	// to do : package builder logic
+	log.Println("list1:", identifiedPkgs)
+	log.Println("list2:", readPkgs)
+}
