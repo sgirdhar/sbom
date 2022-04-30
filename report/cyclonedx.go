@@ -3,6 +3,7 @@ package report
 import (
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -120,13 +121,13 @@ func getComponents(pkgs []pkg.Package) []cdx.Component {
 // 	}
 // }
 
-func ReadCycloneDxReport(sbomFile string) error {
+func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 
 	// Acquire BOM
 	file, err := os.Open(sbomFile)
 	if err != nil {
 		log.Printf("error opening %v: %v", sbomFile, err)
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
@@ -135,12 +136,26 @@ func ReadCycloneDxReport(sbomFile string) error {
 	decoder := cdx.NewBOMDecoder(file, cdx.BOMFileFormatJSON)
 	if err := decoder.Decode(bom); err != nil {
 		log.Println("Error while decoding BOM: ", err.Error())
-		return err
+		return nil, err
 	}
 
 	log.Printf("Successfully decoded %s\n", sbomFile)
 	// log.Printf("Generated: %s\n", bom.Metadata.Timestamp)
 	log.Printf("Components identified by %v: %v\n", (*bom.Metadata.Tools)[0].Name, len(*bom.Components))
 
-	return nil
+	return bom, nil
+}
+
+func GetPkgsList(sbomFile string) ([]string, error) {
+	bom, err := ReadCycloneDxReport(sbomFile)
+	if err != nil {
+		log.Println("error while reading cyclonedx sbom")
+		return nil, err
+	}
+	var componentList []string
+	for _, component := range *bom.Components {
+		componentList = append(componentList, component.Name+"-"+component.Version)
+	}
+	sort.Strings(componentList)
+	return componentList, nil
 }

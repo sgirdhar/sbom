@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/sgirdhar/sbom/pkg"
 	"github.com/sgirdhar/sbom/report"
 	"github.com/sgirdhar/sbom/util"
@@ -122,21 +123,37 @@ func commonProcessing(tempDir, image string) {
 
 	// TO DO: Refactor - create new functions for output generation and comparison
 	if compareFile == "" && len(compareFile) == 0 {
-		if strings.Contains(outputFormat, "cyclonedx") {
-			err = report.GenerateCycloneDxReport(image, outputFormat, configFile, pkgs, osRelease)
-		} else if outputFormat == "" || strings.Contains(outputFormat, "table") {
-			err = report.GenerateTableReport(pkgs)
-		} else {
-			err = errors.New("invalid output format")
-		}
-		if err != nil {
-			log.Fatalln("error while generating report: ", err.Error())
-		}
+		generateSbom(image, configFile, pkgs, osRelease)
 	} else {
-		err = report.ReadCycloneDxReport(compareFile)
-		if err != nil {
-			log.Fatalln("error while reading json report", err.Error())
-		}
+		compareSbom(pkgs)
+	}
+}
+
+func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, osRelease util.OsRelease) {
+	var err error
+	if strings.Contains(outputFormat, "cyclonedx") {
+		err = report.GenerateCycloneDxReport(image, outputFormat, configFile, pkgs, osRelease)
+	} else if outputFormat == "" || strings.Contains(outputFormat, "table") {
+		err = report.GenerateTableReport(pkgs)
+	} else {
+		err = errors.New("invalid output format")
+	}
+	if err != nil {
+		log.Fatalln("error while generating report: ", err.Error())
+	}
+}
+
+func compareSbom(pkgs []pkg.Package) {
+
+	identifiedPkgs := pkg.GetPkgList(pkgs)
+
+	readPkgs, err := report.GetPkgsList(compareFile)
+	if err != nil {
+		log.Fatalln("error while reading json report", err.Error())
 	}
 
+	err = util.ListComp(identifiedPkgs, readPkgs)
+	if err != nil {
+		log.Fatalln("error: ", err.Error())
+	}
 }

@@ -64,3 +64,12 @@ func sortPkgs(pkgs []Package) {
 		return pkgs[i].Name < pkgs[j].Name
 	})
 }
+
+func GetPkgList(pkgs []Package) []string {
+	var pkgList []string
+	for _, pkg := range pkgs {
+		pkgList = append(pkgList, pkg.Name+"-"+pkg.Version)
+	}
+	sort.Strings(pkgList)
+	return pkgList
+}
