@@ -16,7 +16,6 @@ import (
 func GenerateCycloneDxReport(image, outputFormat string, configFile v1.ConfigFile, pkgs []pkg.Package, osRelease util.OsRelease) error {
 
 	metadata := getMetadata(image, configFile, osRelease)
-
 	components := getComponents(pkgs)
 	// dependencies := getDependencies()
 
@@ -120,3 +119,28 @@ func getComponents(pkgs []pkg.Package) []cdx.Component {
 // 		},
 // 	}
 // }
+
+func ReadCycloneDxReport(sbomFile string) error {
+
+	// Acquire BOM
+	file, err := os.Open(sbomFile)
+	if err != nil {
+		log.Printf("error opening %v: %v", sbomFile, err)
+		return err
+	}
+	defer file.Close()
+
+	// Decode BOM
+	bom := new(cdx.BOM)
+	decoder := cdx.NewBOMDecoder(file, cdx.BOMFileFormatJSON)
+	if err := decoder.Decode(bom); err != nil {
+		log.Println("Error while decoding BOM: ", err.Error())
+		return err
+	}
+
+	log.Printf("Successfully decoded %s\n", sbomFile)
+	// log.Printf("Generated: %s\n", bom.Metadata.Timestamp)
+	log.Printf("Components identified by %v: %v\n", (*bom.Metadata.Tools)[0].Name, len(*bom.Components))
+
+	return nil
+}

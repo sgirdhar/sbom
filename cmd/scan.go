@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tarFile, outputFormat string
+var tarFile, outputFormat, compareFile string
 
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
@@ -55,6 +55,8 @@ func init() {
 	scanCmd.PersistentFlags().StringVarP(&tarFile, "tarball", "t", "", "tar file path")
 
 	scanCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format")
+
+	scanCmd.PersistentFlags().StringVarP(&compareFile, "compare", "c", "", "compare generated sbom with the result of another cyclonedx output")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
@@ -116,16 +118,25 @@ func commonProcessing(tempDir, image string) {
 
 	util.RemoveDir(tempDir)
 
-	log.Println("No. of packages found: ", len(pkgs))
+	log.Println("Components identified by sbom: ", len(pkgs))
 
-	if strings.Contains(outputFormat, "cyclonedx") {
-		err = report.GenerateCycloneDxReport(image, outputFormat, configFile, pkgs, osRelease)
-	} else if outputFormat == "" || strings.Contains(outputFormat, "table") {
-		err = report.GenerateTableReport(pkgs)
+	// TO DO: Refactor - create new functions for output generation and comparison
+	if compareFile == "" && len(compareFile) == 0 {
+		if strings.Contains(outputFormat, "cyclonedx") {
+			err = report.GenerateCycloneDxReport(image, outputFormat, configFile, pkgs, osRelease)
+		} else if outputFormat == "" || strings.Contains(outputFormat, "table") {
+			err = report.GenerateTableReport(pkgs)
+		} else {
+			err = errors.New("invalid output format")
+		}
+		if err != nil {
+			log.Fatalln("error while generating report: ", err.Error())
+		}
 	} else {
-		err = errors.New("invalid output format")
+		err = report.ReadCycloneDxReport(compareFile)
+		if err != nil {
+			log.Fatalln("error while reading json report", err.Error())
+		}
 	}
-	if err != nil {
-		log.Fatalln("error while generating report: ", err.Error())
-	}
+
 }
