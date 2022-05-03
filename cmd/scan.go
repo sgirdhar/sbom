@@ -145,14 +145,17 @@ func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, os
 
 func compareSbom(pkgs []pkg.Package) {
 
-	identifiedPkgs := pkg.GetPkgList(pkgs)
+	identifiedList, identifiedMap := pkg.GetPkgListAndMap(pkgs)
 
-	readPkgs, err := report.GetPkgsList(compareFile)
+	readList, readMap, err := report.GetPkgsListAndMap(compareFile)
 	if err != nil {
 		log.Fatalln("error while reading json report", err.Error())
 	}
 
-	err = util.ListComp(identifiedPkgs, readPkgs)
+	log.Println("identifiedMap: ", identifiedMap)
+	log.Println("readMap: ", readMap)
+
+	err = util.ListComp(identifiedList, readList)
 	if err != nil {
 		log.Fatalln("error: ", err.Error())
 	}
