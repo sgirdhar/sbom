@@ -146,16 +146,22 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 	return bom, nil
 }
 
-func GetPkgsList(sbomFile string) ([]string, error) {
+func GetPkgsListAndMap(sbomFile string) ([]string, map[string]pkg.Package, error) {
 	bom, err := ReadCycloneDxReport(sbomFile)
 	if err != nil {
 		log.Println("error while reading cyclonedx sbom")
-		return nil, err
+		return nil, nil, err
 	}
 	var componentList []string
+	var componentMap = make(map[string]pkg.Package)
 	for _, component := range *bom.Components {
 		componentList = append(componentList, component.Name+"-"+component.Version)
+		componentMap[component.Name+"-"+component.Version] = pkg.Package{
+			Name:    component.Name,
+			Version: component.Version,
+			PURL:    component.PackageURL,
+		}
 	}
 	sort.Strings(componentList)
-	return componentList, nil
+	return componentList, componentMap, nil
 }
