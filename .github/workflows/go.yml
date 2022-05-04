@@ -23,3 +23,9 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+     # Run vet & lint on the code
+    - name: Run vet & lint
+      run: |
+        go vet .
+        golint .
