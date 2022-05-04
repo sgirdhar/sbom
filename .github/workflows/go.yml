@@ -24,6 +24,12 @@ jobs:
     - name: Test
       run: go test -v ./...
 
+    # Install all the dependencies
+    - name: Install dependencies
+      run: |
+        go version
+        go get -u golang.org/x/lint/golint
+
      # Run vet & lint on the code
     - name: Run vet & lint
       run: |
