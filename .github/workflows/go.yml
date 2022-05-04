@@ -18,20 +18,22 @@ jobs:
       with:
         go-version: 1.18
 
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
-
     # Install all the dependencies
     - name: Install dependencies
       run: |
         go version
         go get -u golang.org/x/lint/golint
 
-     # Run vet & lint on the code
+    - name: Build
+      run: go build -v ./...
+
+    # Run vet & lint on the code
     - name: Run vet & lint
       run: |
         go vet .
         golint .
+
+    - name: Test
+      run: go test -v ./...
+
+     
