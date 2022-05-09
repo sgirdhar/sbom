@@ -12,3 +12,7 @@ Sbom scan command can be used to generate the bom.
 
 	Input tarfile
 		sbom scan --tar /path/to/tarfile/alpine.tar
+
+<!--
+Add a note mentioning external libraties used. Mention copyright and License under which those are published.
+-->

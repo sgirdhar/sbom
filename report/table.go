@@ -2,6 +2,7 @@ package report
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"text/tabwriter"
 
@@ -64,7 +65,7 @@ import (
 func GenerateTableReport(pkgs []pkg.Package) error {
 	// Observe how the b's and the d's, despite appearing in the
 	// second cell of each line, belong to different columns.
-	fmt.Println("Generating tabular report")
+	log.Println("Generating tabular report")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight|tabwriter.Debug)
 	// fmt.Fprintln(w, "------------------\t\t------------------\t\t------------------\t\t------------------\t\t------------------\t\t------------------")
 	fmt.Fprintln(w, "NAME\tVERSION\tARCHITECTURE\tPURL")

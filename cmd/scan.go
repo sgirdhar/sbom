@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -14,6 +16,7 @@ import (
 )
 
 var tarFile, outputFormat, compareFile string
+var verbose bool
 
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
@@ -38,6 +41,11 @@ Image name (with either tag or digest) or image tar can be passed as input`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if verbose {
+			log.SetOutput(os.Stderr)
+		} else {
+			log.SetOutput(ioutil.Discard)
+		}
 		if tarFile != "" {
 			scanTarImage(tarFile)
 		} else {
@@ -58,6 +66,8 @@ func init() {
 	scanCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format")
 
 	scanCmd.PersistentFlags().StringVarP(&compareFile, "compare", "c", "", "compare generated sbom with the result of another cyclonedx output")
+
+	scanCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output including logs")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
@@ -119,7 +129,7 @@ func commonProcessing(tempDir, image string) {
 
 	util.RemoveDir(tempDir)
 
-	log.Println("Components identified by sbom: ", len(pkgs))
+	log.Printf("Components identified by %v: %v\n", util.ApplicationName, len(pkgs))
 
 	// TO DO: Refactor - create new functions for output generation and comparison
 	if compareFile == "" && len(compareFile) == 0 {
@@ -145,17 +155,14 @@ func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, os
 
 func compareSbom(pkgs []pkg.Package) {
 
-	identifiedList, identifiedMap := pkg.GetPkgListAndMap(pkgs)
+	identifiedMap := pkg.GetPkgMap(pkgs)
 
-	readList, readMap, err := report.GetPkgsListAndMap(compareFile)
+	readMap, toolName, err := report.GetPkgMap(compareFile)
 	if err != nil {
 		log.Fatalln("error while reading json report", err.Error())
 	}
 
-	log.Println("identifiedMap: ", identifiedMap)
-	log.Println("readMap: ", readMap)
-
-	err = util.ListComp(identifiedList, readList)
+	err = pkg.ListComp(identifiedMap, readMap, toolName)
 	if err != nil {
 		log.Fatalln("error: ", err.Error())
 	}

@@ -3,8 +3,9 @@ package util
 import "log"
 
 const (
-	ApplicationName    = "sbom"
-	ApplicationVersion = "0.3"
+	ApplicationName       = "sbom"
+	ApplicationVersion    = "0.3"
+	AssociationThresholod = 3
 )
 
 func PrintSbom() {

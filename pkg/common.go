@@ -65,13 +65,11 @@ func sortPkgs(pkgs []Package) {
 	})
 }
 
-func GetPkgListAndMap(pkgs []Package) ([]string, map[string]Package) {
-	var pkgList []string
+func GetPkgMap(pkgs []Package) map[string]Package {
 	var pkgMap = make(map[string]Package)
 	for _, pkg := range pkgs {
-		pkgList = append(pkgList, pkg.Name+"-"+pkg.Version)
+		pkg.Type = "library"
 		pkgMap[pkg.Name+"-"+pkg.Version] = pkg
 	}
-	sort.Strings(pkgList)
-	return pkgList, pkgMap
+	return pkgMap
 }
