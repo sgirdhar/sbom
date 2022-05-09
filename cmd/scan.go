@@ -57,8 +57,6 @@ Image name (with either tag or digest) or image tar can be passed as input`,
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
-	// Here you will define your flags and configuration settings.
-
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	scanCmd.PersistentFlags().StringVarP(&tarFile, "tarball", "t", "", "tar file path")
@@ -149,7 +147,7 @@ func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, os
 		err = errors.New("invalid output format")
 	}
 	if err != nil {
-		log.Fatalln("error while generating report: ", err.Error())
+		log.Fatalln("error while generating report:", err.Error())
 	}
 }
 
