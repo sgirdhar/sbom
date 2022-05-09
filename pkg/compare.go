@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -10,20 +11,21 @@ import (
 )
 
 func ListComp(identifiedMap, readMap map[string]Package, toolName string) error {
-	// package builder logic
 
 	if len(identifiedMap) != len(readMap) {
-
 		fmt.Println("Unequal number of components identified by tools")
 	}
 
 	identifiedDiff, readDiff := getDiffLists(identifiedMap, readMap)
 
-	handleDiff(identifiedDiff, readDiff, identifiedMap, readMap, toolName)
-
+	err := handleDiff(identifiedDiff, readDiff, identifiedMap, readMap, toolName)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
+// Identifying the difference in SBOM if any
 func getDiffLists(identifiedMap, readMap map[string]Package) ([]string, []string) {
 	var identifiedDiff, readDiff []string
 
@@ -40,18 +42,18 @@ func getDiffLists(identifiedMap, readMap map[string]Package) ([]string, []string
 			readDiff = append(readDiff, key)
 		}
 	}
-
 	return identifiedDiff, readDiff
 }
 
-func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[string]Package, toolName string) {
+// handling output based on identified difference in SBOM
+func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[string]Package, toolName string) error {
 
 	// matching SBOM
 	if len(identifiedDiff) == 0 && len(readDiff) == 0 {
 		fmt.Println("Matching SBOM")
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
-		return
+		return nil
 	}
 
 	// read list has extra components
@@ -61,7 +63,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
 		fmt.Printf("Extra component(s) identified by %v\n", toolName)
 		printComponents(readDiff, readMap)
-		return
+		return nil
 	}
 
 	// identified list has extra components
@@ -71,7 +73,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
 		fmt.Printf("Extra component(s) identified by %v\n", util.ApplicationName)
 		printComponents(identifiedDiff, identifiedMap)
-		return
+		return nil
 	}
 
 	// both lists have extra components - further investigation needed
@@ -93,10 +95,11 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 				printDisputedComponents(identifiedMap[key1], readMap[key2], toolName)
 			}
 		}
-		return
+		return nil
 	}
 	// default case
 	fmt.Println("Comparison unsuccessful !")
+	return errors.New("comparison unsuccessful")
 }
 
 func printComponents(readDiff []string, pkgMap map[string]Package) {
@@ -110,6 +113,7 @@ func printComponents(readDiff []string, pkgMap map[string]Package) {
 	}
 }
 
+// trying to guess association between identified packages, associationThreshold is a configurable value
 func guessAssociation(identifiedDiff, readDiff []string) map[string]string {
 	var associationMap = make(map[string]string)
 	for _, id := range identifiedDiff {
