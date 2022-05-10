@@ -61,7 +61,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 	if len(identifiedDiff) == 0 && len(readDiff) != 0 {
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
-		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+		fmt.Println("----------------------------------------------------------------------------------------------------")
 		fmt.Printf("Extra component(s) identified by %v\n", toolName)
 		printComponents(readDiff, readMap)
 		return nil
@@ -71,7 +71,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 	if len(identifiedDiff) != 0 && len(readDiff) == 0 {
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
-		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+		fmt.Println("----------------------------------------------------------------------------------------------------")
 		fmt.Printf("Extra component(s) identified by %v\n", util.ApplicationName)
 		printComponents(identifiedDiff, identifiedMap)
 		return nil
@@ -81,7 +81,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 	if len(identifiedDiff) != 0 && len(readDiff) != 0 {
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
-		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+		fmt.Println("----------------------------------------------------------------------------------------------------")
 		fmt.Printf("Extra component(s) identified by %v\n", util.ApplicationName)
 		printComponents(identifiedDiff, identifiedMap)
 		fmt.Printf("Extra component(s) identified by %v\n", toolName)
@@ -91,7 +91,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		log.Println(associationMap)
 
 		if len(associationMap) != 0 && associationMap != nil {
-			fmt.Println("Disputed component(s):")
+			fmt.Println("Disputed component(s):", len(associationMap))
 			for key1, key2 := range associationMap {
 				printDisputedComponents(identifiedMap[key1], readMap[key2], toolName)
 			}
@@ -105,12 +105,12 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 
 func printComponents(readDiff []string, pkgMap map[string]Package) {
 	for _, key := range readDiff {
-		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+		fmt.Println("----------------------------------------------------------------------------------------------------")
 		fmt.Println("Name: ", pkgMap[key].Name)
 		fmt.Println("Version: ", pkgMap[key].Version)
 		fmt.Println("Type: ", pkgMap[key].Type)
 		fmt.Println("Purl: ", pkgMap[key].PURL)
-		fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+		fmt.Println("----------------------------------------------------------------------------------------------------")
 	}
 }
 
@@ -130,11 +130,11 @@ func guessAssociation(identifiedDiff, readDiff []string) map[string]string {
 }
 
 func printDisputedComponents(identifiedPkg, readPkg Package, toolName string) {
-	fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+	fmt.Println("----------------------------------------------------------------------------------------------------")
 	if identifiedPkg.Name == readPkg.Name {
-		fmt.Println("Name: ", identifiedPkg.Name)
+		fmt.Println(util.Blue+"Name: ", identifiedPkg.Name)
 	} else {
-		fmt.Printf("Name (%v): %v | Name (%v): %v\n", util.ApplicationName, identifiedPkg.Name, toolName, readPkg.Name)
+		fmt.Printf(util.Blue+"Name (%v): %v | Name (%v): %v\n", util.ApplicationName, identifiedPkg.Name, toolName, readPkg.Name)
 	}
 	if identifiedPkg.Version == readPkg.Version {
 		fmt.Println("Version: ", identifiedPkg.Version)
@@ -147,9 +147,10 @@ func printDisputedComponents(identifiedPkg, readPkg Package, toolName string) {
 		fmt.Printf("Type (%v): %v | Type (%v): %v\n", util.ApplicationName, identifiedPkg.Type, toolName, readPkg.Type)
 	}
 	if identifiedPkg.PURL == readPkg.PURL {
-		fmt.Println("Purl: ", identifiedPkg.Name)
+		fmt.Println("Purl: ", identifiedPkg.Name+util.Reset)
 	} else {
-		fmt.Printf("Purl (%v): %v | Purl (%v): %v\n", util.ApplicationName, identifiedPkg.PURL, toolName, readPkg.PURL)
+		fmt.Printf("Purl (%v): %v\n", util.ApplicationName, identifiedPkg.PURL)
+		fmt.Printf("Purl (%v): %v\n", toolName, readPkg.PURL+util.Reset)
 	}
-	fmt.Println("-----------------------------------------------------------------------------------------------------------------------------")
+	fmt.Println("----------------------------------------------------------------------------------------------------")
 }
