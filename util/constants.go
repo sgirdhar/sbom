@@ -4,7 +4,7 @@ import "log"
 
 const (
 	ApplicationName       = "sbom"
-	ApplicationVersion    = "0.3"
+	ApplicationVersion    = "0.4"
 	AssociationThresholod = 3
 )
 
