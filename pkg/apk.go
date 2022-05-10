@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/sgirdhar/sbom/util"
 )
@@ -10,7 +10,7 @@ func analyzeApk(extractDir string) ([]Package, error) {
 	const pkgPath string = "/lib/apk/db/installed"
 	pkgLines, err := util.ReadFile(extractDir + pkgPath)
 	if err != nil {
-		log.Printf("error while reading %v file", pkgPath)
+		fmt.Printf(util.Red+"error while reading %v file", pkgPath)
 		return nil, err
 	}
 	pkgs := parseApk(pkgLines)

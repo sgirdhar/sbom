@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/acobaugh/osrelease"
@@ -25,7 +26,7 @@ func IdentifyOsRelease(extractDir string) (OsRelease, error) {
 		osReleaseMap, err = osrelease.ReadFile(extractDir + usrLibOsRelease)
 	}
 	if err != nil {
-		log.Println("error while reading os-release file: ", err.Error())
+		fmt.Println(Red + "error while reading os-release file")
 		return osRelease, err
 	}
 

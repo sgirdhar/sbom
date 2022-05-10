@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -36,7 +37,7 @@ func GenerateCycloneDxReport(image, outputFormat string, configFile v1.ConfigFil
 
 	encoder.SetPretty(true)
 	if err := encoder.Encode(bom); err != nil {
-		log.Println("Error while encoding BOM: ", err.Error())
+		fmt.Println(util.Red + "Error while encoding BOM")
 		return err
 	}
 	return nil
@@ -125,7 +126,7 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 	// Acquire BOM
 	file, err := os.Open(sbomFile)
 	if err != nil {
-		log.Printf("error opening %v: %v", sbomFile, err)
+		fmt.Printf(util.Red+"error opening %v", sbomFile)
 		return nil, err
 	}
 	defer file.Close()
@@ -134,7 +135,7 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 	bom := new(cdx.BOM)
 	decoder := cdx.NewBOMDecoder(file, cdx.BOMFileFormatJSON)
 	if err := decoder.Decode(bom); err != nil {
-		log.Println("Error while decoding BOM: ", err.Error())
+		fmt.Println(util.Red + "error while decoding BOM")
 		return nil, err
 	}
 
@@ -148,7 +149,7 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 func GetPkgMap(sbomFile string) (map[string]pkg.Package, string, error) {
 	bom, err := ReadCycloneDxReport(sbomFile)
 	if err != nil {
-		log.Println("error while reading cyclonedx sbom")
+		fmt.Println(util.Red + "error while reading cyclonedx sbom")
 		return nil, "", err
 	}
 	var componentMap = make(map[string]pkg.Package)

@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -14,10 +15,12 @@ import (
 
 func CreateTempDir(imageName string) (string, error) {
 	dir, err := os.MkdirTemp("", imageName)
+	log.Printf("***** Creating the temp directory: %v *****\n", dir)
+
 	if err != nil {
+		fmt.Println(Red + "error while creating directory")
 		return "", err
 	}
-	log.Printf("***** Creating the temp directory: %v *****\n", dir)
 	return dir, nil
 }
 
@@ -30,6 +33,7 @@ func CreateDir(dir string) error {
 	log.Printf("***** Creating directory: %v *****\n", dir)
 	err := os.MkdirAll(dir, 0750)
 	if err != nil && !os.IsExist(err) {
+		fmt.Println(Red + "error while creating directory")
 		return err
 	}
 	return nil
@@ -124,6 +128,7 @@ func ReadFile(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 
 	if err != nil {
+		fmt.Println(Red+"error while opening %v", filePath)
 		return txtlines, err
 	}
 

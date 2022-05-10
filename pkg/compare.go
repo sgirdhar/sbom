@@ -20,6 +20,7 @@ func ListComp(identifiedMap, readMap map[string]Package, toolName string) error 
 
 	err := handleDiff(identifiedDiff, readDiff, identifiedMap, readMap, toolName)
 	if err != nil {
+		fmt.Println(util.Red + "error while handling difference in SBOM ")
 		return err
 	}
 	return nil
@@ -50,7 +51,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 
 	// matching SBOM
 	if len(identifiedDiff) == 0 && len(readDiff) == 0 {
-		fmt.Println("Matching SBOM")
+		fmt.Println(util.Green + "Matching SBOM")
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
 		return nil
