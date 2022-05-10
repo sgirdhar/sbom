@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/sgirdhar/sbom/util"
@@ -11,7 +11,7 @@ func analyzeDpkg(extractDir, osDistro string) ([]Package, error) {
 	const pkgPath string = "/var/lib/dpkg/status"
 	pkgLines, err := util.ReadFile(extractDir + pkgPath)
 	if err != nil {
-		log.Printf("error while reading %v file", pkgPath)
+		fmt.Printf(util.Red+"error while reading %v file", pkgPath)
 		return nil, err
 	}
 

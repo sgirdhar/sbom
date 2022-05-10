@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -78,12 +79,14 @@ func scanStringImage(image string) {
 
 	v1Image, err := util.PullImage(image)
 	if err != nil {
-		log.Fatalln("error while pulling image: ", err.Error())
+		fmt.Println("error while pulling image: ", err)
+		log.Fatalln()
 	}
 
 	tempDir, err := util.SaveAndUntarImage(v1Image, image)
 	if err != nil {
-		log.Fatalln("error while saving or untarring image: ", err.Error())
+		fmt.Println("error while saving or untarring image: ", err)
+		log.Fatalln()
 	}
 	commonProcessing(tempDir, image)
 }
@@ -93,7 +96,8 @@ func scanTarImage(tarFile string) {
 
 	tempDir, err := util.UntarImage(tarFile)
 	if err != nil {
-		log.Fatalln("error while untarring tar image: ", err.Error())
+		fmt.Println("error while untarring tar image: ", err)
+		log.Fatalln()
 	}
 	// log.Println("tempDir: ", tempDir)
 	commonProcessing(tempDir, tarFile)
@@ -102,27 +106,32 @@ func scanTarImage(tarFile string) {
 func commonProcessing(tempDir, image string) {
 	manifest, err := util.ReadImageManifest(tempDir)
 	if err != nil {
-		log.Fatalln("error while reading image manifest: ", err.Error())
+		fmt.Println("error while reading image manifest: ", err)
+		log.Fatalln()
 	}
 
 	configFile, err := util.ReadImageConfig(tempDir, manifest)
 	if err != nil {
-		log.Fatalln("error while reading image config: ", err.Error())
+		fmt.Println("error while reading image config: ", err)
+		log.Fatalln()
 	}
 
 	extractLayer, err := util.ExtractLayer(tempDir, manifest)
 	if err != nil {
-		log.Fatalln("error while extracting layer: ", err.Error())
+		fmt.Println("error while extracting layer: ", err)
+		log.Fatalln()
 	}
 
 	osRelease, err := util.IdentifyOsRelease(extractLayer)
 	if err != nil {
-		log.Fatalln("error while identifying OS release: ", err.Error())
+		fmt.Println("error while identifying OS release: ", err)
+		log.Fatalln()
 	}
 
 	pkgs, err := pkg.AnalyzePkg(osRelease, extractLayer)
 	if err != nil {
-		log.Fatalln("error while fetching package information: ", err.Error())
+		fmt.Println("error while fetching package information: ", err)
+		log.Fatalln()
 	}
 
 	util.RemoveDir(tempDir)
@@ -147,7 +156,8 @@ func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, os
 		err = errors.New("invalid output format")
 	}
 	if err != nil {
-		log.Fatalln("error while generating report:", err.Error())
+		fmt.Println("error while generating report:", err)
+		log.Fatalln()
 	}
 }
 
@@ -157,11 +167,13 @@ func compareSbom(pkgs []pkg.Package) {
 
 	readMap, toolName, err := report.GetPkgMap(compareFile)
 	if err != nil {
-		log.Fatalln("error while reading json report", err.Error())
+		fmt.Println("error while reading json report", err)
+		log.Fatalln()
 	}
 
 	err = pkg.ListComp(identifiedMap, readMap, toolName)
 	if err != nil {
-		log.Fatalln("error: ", err.Error())
+		fmt.Println("error while comparing sbom: ", err)
+		log.Fatalln()
 	}
 }

@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"sort"
 	"strings"
@@ -28,7 +30,7 @@ func AnalyzePkg(osRelease util.OsRelease, extractDir string) ([]Package, error) 
 		log.Println("Getting packages for Alpine")
 		pkgs, err := analyzeApk(extractDir)
 		if err != nil {
-			log.Println("error while getting alpine packages")
+			fmt.Println(util.Red + "error while getting alpine packages")
 			return nil, err
 		}
 		sortPkgs(pkgs)
@@ -38,7 +40,7 @@ func AnalyzePkg(osRelease util.OsRelease, extractDir string) ([]Package, error) 
 		log.Println("Getting packages for Ubuntu")
 		pkgs, err := analyzeDpkg(extractDir, "ubuntu")
 		if err != nil {
-			log.Println("error while getting dpkg packages")
+			fmt.Println(util.Red + "error while getting dpkg packages")
 			return nil, err
 		}
 		sortPkgs(pkgs)
@@ -48,14 +50,15 @@ func AnalyzePkg(osRelease util.OsRelease, extractDir string) ([]Package, error) 
 		log.Println("Getting packages for Debian")
 		pkgs, err := analyzeDpkg(extractDir, "debian")
 		if err != nil {
-			log.Println("error while getting dpkg packages")
+			fmt.Println(util.Red + "error while getting dpkg packages")
 			return nil, err
 		}
 		sortPkgs(pkgs)
 		return pkgs, nil
 	} else {
-		log.Fatalln("Linux distribution not supported yet!!!!")
-		return nil, nil
+		fmt.Println(util.Red + "linux distribution not supported yet")
+		err := errors.New("linux distribution not supported yet")
+		return nil, err
 	}
 }
 
