@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/sgirdhar/sbom/util"
 )
@@ -10,7 +10,7 @@ func analyzeApk(extractDir string) ([]Package, error) {
 	const pkgPath string = "/lib/apk/db/installed"
 	pkgLines, err := util.ReadFile(extractDir + pkgPath)
 	if err != nil {
-		fmt.Printf(util.Red+"error while reading %v file", pkgPath)
+		log.Printf("error while reading %v file", pkgPath)
 		return nil, err
 	}
 	pkgs := parseApk(pkgLines)
@@ -18,6 +18,7 @@ func analyzeApk(extractDir string) ([]Package, error) {
 }
 
 func parseApk(pkgLines []string) []Package {
+	log.Println("Parsing apk")
 	var (
 		pkgs []Package
 		pkg  Package
@@ -42,7 +43,7 @@ func parseApk(pkgLines []string) []Package {
 		case "A:":
 			pkg.Architecture = line[2:]
 		case "L:":
-			pkg.License = line[2:]
+			pkg.Licenses = []string{line[2:]}
 		case "U:":
 			pkg.URL = line[2:]
 		}

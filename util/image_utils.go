@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -18,11 +17,11 @@ type Manifest struct {
 }
 
 func PullImage(image string) (v1.Image, error) {
-	log.Println("pulling image: ", image)
+	log.Println("Pulling image: ", image)
 
 	v1Image, err := crane.Pull(image)
 	if err != nil {
-		fmt.Println(Red + "error while pulling image")
+		log.Println("error while pulling image")
 		return nil, err
 	}
 	return v1Image, nil
@@ -35,21 +34,22 @@ func SaveAndUntarImage(v1Image v1.Image, image string) (string, error) {
 
 	tempDir, err := CreateTempDir(imageName)
 	if err != nil {
-		fmt.Println(Red + "error while creating temp directory")
+		log.Println("error while creating temp directory")
 		return "", err
 	}
 
 	imageLocation := tempDir + "/" + tarFile
+	log.Println("Saving image at: ", imageLocation)
 
 	err = crane.Save(v1Image, image, imageLocation)
 	if err != nil {
-		fmt.Println(Red + "error while saving image")
+		log.Println("error while saving image")
 		return "", err
 	}
 
 	err = Untar(imageLocation, tempDir)
 	if err != nil {
-		fmt.Println(Red + "error while untarring image")
+		log.Println("error while untarring image")
 		return "", err
 	}
 	return tempDir, nil
@@ -69,18 +69,18 @@ func UntarImage(tarPath string) (string, error) {
 	Slice := strings.Split(tarPath, "/")
 	image := Slice[len(Slice)-1]
 	tarDir := strings.Join(Slice[:len(Slice)-1], "/")
-	log.Printf("tarFile:%v, tarDir:%v", image, tarDir)
+	log.Printf("tarFile:%v,\n tarDir:%v\n", image, tarDir)
 
 	tempDir := tarDir + "/" + strings.Split(image, ".")[0]
 
 	err := CreateDir(tempDir)
 	if err != nil {
-		fmt.Println(Red + "error while creating directory")
+		log.Println("error while creating directory")
 		return "", err
 	}
 	err = Untar(tarPath, tempDir)
 	if err != nil {
-		fmt.Println(Red + "error while untarring image")
+		log.Println("error while untarring image")
 		return "", err
 	}
 	return tempDir, nil
@@ -94,7 +94,7 @@ func ReadImageManifest(tempDir string) (Manifest, error) {
 
 	content, err := ioutil.ReadFile(manifestLocation)
 	if err != nil {
-		fmt.Println(Red + "error when opening file")
+		log.Println("error when opening file")
 		return manifest, err
 	}
 
@@ -102,7 +102,7 @@ func ReadImageManifest(tempDir string) (Manifest, error) {
 	var payload []Manifest
 	err = json.Unmarshal(content, &payload)
 	if err != nil {
-		fmt.Println(Red + "error during Unmarshal")
+		log.Println("error during Unmarshal")
 		return manifest, nil
 	}
 
@@ -117,14 +117,14 @@ func ReadImageConfig(tempDir string, manifest Manifest) (v1.ConfigFile, error) {
 
 	content, err := ioutil.ReadFile(configLocation)
 	if err != nil {
-		fmt.Println(Red + "error when opening file")
+		log.Println("error when opening file")
 		return configFile, err
 	}
 
 	// unmarshall data
 	err = json.Unmarshal(content, &configFile)
 	if err != nil {
-		fmt.Println(Red + "error during Unmarshal")
+		log.Println("error during Unmarshal")
 		return configFile, err
 	}
 
@@ -138,7 +138,7 @@ func ExtractLayer(tempDir string, manifest Manifest) (string, error) {
 	if strings.Contains(source, ".gz") {
 		err := UnGzip(source, target)
 		if err != nil {
-			fmt.Println(Red + "error while unzipping image")
+			log.Println("error while unzipping image")
 			return "", err
 		}
 	}
@@ -146,13 +146,13 @@ func ExtractLayer(tempDir string, manifest Manifest) (string, error) {
 	newDir := tempDir + "/" + strings.Split(manifest.Layers[0], ".")[0]
 	err := CreateDir(newDir)
 	if err != nil {
-		fmt.Println(Red + "error while creating directory")
+		log.Println("error while creating directory")
 		return "", err
 	}
 
 	err = Untar(target, newDir)
 	if err != nil {
-		fmt.Println(Red + "error while untarring image")
+		log.Println("error while untarring image")
 		return "", err
 	}
 	return newDir, nil

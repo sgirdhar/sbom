@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -18,7 +17,7 @@ func CreateTempDir(imageName string) (string, error) {
 	log.Printf("***** Creating the temp directory: %v *****\n", dir)
 
 	if err != nil {
-		fmt.Println(Red + "error while creating directory")
+		log.Println("error while creating directory")
 		return "", err
 	}
 	return dir, nil
@@ -26,14 +25,14 @@ func CreateTempDir(imageName string) (string, error) {
 
 func RemoveDir(dir string) {
 	log.Printf("***** Removing directory: %v *****\n", dir)
-	defer os.RemoveAll(dir) // clean up
+	os.RemoveAll(dir) // clean up
 }
 
 func CreateDir(dir string) error {
 	log.Printf("***** Creating directory: %v *****\n", dir)
 	err := os.MkdirAll(dir, 0750)
 	if err != nil && !os.IsExist(err) {
-		fmt.Println(Red + "error while creating directory")
+		log.Println("error while creating directory")
 		return err
 	}
 	return nil
@@ -59,7 +58,7 @@ func GetCurrentWorkDir() (string, error) {
 }
 
 func Untar(tarball, target string) error {
-	log.Printf("Untarring %v at %v", tarball, target)
+	log.Printf("Untarring %v at\n %v\n", tarball, target)
 	reader, err := os.Open(tarball)
 	if err != nil {
 		return err
@@ -128,7 +127,7 @@ func ReadFile(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		fmt.Println(Red+"error while opening %v", filePath)
+		log.Printf("error while opening %v\n", filePath)
 		return txtlines, err
 	}
 
@@ -142,4 +141,16 @@ func ReadFile(filePath string) ([]string, error) {
 	file.Close()
 
 	return txtlines, nil
+}
+
+func CheckFile(name string) error {
+	_, err := os.Stat(name)
+	if os.IsNotExist(err) {
+		log.Printf("%v does not exist.\n", name)
+	}
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
 }

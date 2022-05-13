@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/sgirdhar/sbom/util"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func ListComp(identifiedMap, readMap map[string]Package, toolName string) error {
-
+	log.Println("Comparison logic")
 	if len(identifiedMap) != len(readMap) {
 		fmt.Println("Unequal number of components identified by tools")
 	}
@@ -20,7 +21,7 @@ func ListComp(identifiedMap, readMap map[string]Package, toolName string) error 
 
 	err := handleDiff(identifiedDiff, readDiff, identifiedMap, readMap, toolName)
 	if err != nil {
-		fmt.Println(util.Red + "error while handling difference in SBOM ")
+		log.Println("error while handling difference in SBOM ")
 		return err
 	}
 	return nil
@@ -62,7 +63,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
 		fmt.Println("----------------------------------------------------------------------------------------------------")
-		fmt.Printf("Extra component(s) identified by %v\n", toolName)
+		fmt.Printf("Extra component(s) identified by %v: %v\n", toolName, len(readDiff))
 		printComponents(readDiff, readMap)
 		return nil
 	}
@@ -72,7 +73,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
 		fmt.Println("----------------------------------------------------------------------------------------------------")
-		fmt.Printf("Extra component(s) identified by %v\n", util.ApplicationName)
+		fmt.Printf("Extra component(s) identified by %v: %v\n", util.ApplicationName, len(identifiedDiff))
 		printComponents(identifiedDiff, identifiedMap)
 		return nil
 	}
@@ -82,9 +83,9 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		fmt.Printf("Components identified by %v: %v\n", util.ApplicationName, len(identifiedMap))
 		fmt.Printf("Components identified by %v: %v\n", toolName, len(readMap))
 		fmt.Println("----------------------------------------------------------------------------------------------------")
-		fmt.Printf("Extra component(s) identified by %v\n", util.ApplicationName)
+		fmt.Printf("Extra component(s) identified by %v: %v\n", util.ApplicationName, len(identifiedDiff))
 		printComponents(identifiedDiff, identifiedMap)
-		fmt.Printf("Extra component(s) identified by %v\n", toolName)
+		fmt.Printf("Extra component(s) identified by %v: %v\n", toolName, len(readDiff))
 		printComponents(readDiff, readMap)
 
 		associationMap := guessAssociation(identifiedDiff, readDiff)
@@ -99,7 +100,7 @@ func handleDiff(identifiedDiff, readDiff []string, identifiedMap, readMap map[st
 		return nil
 	}
 	// default case
-	fmt.Println("Comparison unsuccessful !")
+	log.Println("Comparison unsuccessful !")
 	return errors.New("comparison unsuccessful")
 }
 
@@ -114,11 +115,17 @@ func printComponents(readDiff []string, pkgMap map[string]Package) {
 	}
 }
 
-// trying to guess association between identified packages, associationThreshold is a configurable value
+// trying to guess association between identified packages
+// associationThreshold is a configurable value
 func guessAssociation(identifiedDiff, readDiff []string) map[string]string {
 	var associationMap = make(map[string]string)
 	for _, id := range identifiedDiff {
 		for _, rd := range readDiff {
+			// TODO: think carefully and test
+			if strings.Contains(id, rd) || strings.Contains(rd, id) {
+				associationMap[id] = rd
+				continue
+			}
 			distance := levenshtein.Distance(id, rd)
 			log.Printf("The distance between %s and %s is %d.\n", id, rd, distance)
 			if distance < util.AssociationThresholod {

@@ -1,7 +1,6 @@
 package report
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -15,6 +14,7 @@ import (
 )
 
 func GenerateCycloneDxReport(image, outputFormat string, configFile v1.ConfigFile, pkgs []pkg.Package, osRelease util.OsRelease) error {
+	log.Println("Generating cyclonedx report")
 
 	metadata := getMetadata(image, configFile, osRelease)
 	components := getComponents(pkgs)
@@ -37,7 +37,7 @@ func GenerateCycloneDxReport(image, outputFormat string, configFile v1.ConfigFil
 
 	encoder.SetPretty(true)
 	if err := encoder.Encode(bom); err != nil {
-		fmt.Println(util.Red + "Error while encoding BOM")
+		log.Println("Error while encoding BOM")
 		return err
 	}
 	return nil
@@ -90,15 +90,9 @@ func getComponents(pkgs []pkg.Package) []cdx.Component {
 			Name:       pkg.Name,
 			Version:    pkg.Version,
 			PackageURL: pkg.PURL,
+			Licenses:   getLicenses(pkg.Licenses),
 		}
-		if pkg.License != "" {
-			bom.Licenses = &cdx.Licenses{
-				// cdx.LicenseChoice{Expression: pkg.License},
-				cdx.LicenseChoice{License: &cdx.License{
-					Name: pkg.License,
-				}},
-			}
-		}
+
 		componentList = append(componentList, bom)
 	}
 
@@ -121,12 +115,28 @@ func getComponents(pkgs []pkg.Package) []cdx.Component {
 // 	}
 // }
 
-func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
+func getLicenses(licenseList []string) *cdx.Licenses {
+	if len(licenseList) != 0 {
+		licenses := make(cdx.Licenses, len(licenseList))
+		for i, license := range licenseList {
+			licenses[i] = cdx.LicenseChoice{
+				Expression: license,
+				// License: &cdx.License{
+				// 	Name: license,
+				// },
+			}
+		}
+		return &licenses
+	}
+	return nil
+}
 
+func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
+	log.Println("Reading cyclonedx report")
 	// Acquire BOM
 	file, err := os.Open(sbomFile)
 	if err != nil {
-		fmt.Printf(util.Red+"error opening %v", sbomFile)
+		log.Printf(util.Red+"error opening %v", sbomFile)
 		return nil, err
 	}
 	defer file.Close()
@@ -135,12 +145,11 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 	bom := new(cdx.BOM)
 	decoder := cdx.NewBOMDecoder(file, cdx.BOMFileFormatJSON)
 	if err := decoder.Decode(bom); err != nil {
-		fmt.Println(util.Red + "error while decoding BOM")
+		log.Println("error while decoding BOM")
 		return nil, err
 	}
 
 	log.Printf("Successfully decoded %s\n", sbomFile)
-	// log.Printf("Generated: %s\n", bom.Metadata.Timestamp)
 	log.Printf("Components identified by %v: %v\n", (*bom.Metadata.Tools)[0].Name, len(*bom.Components))
 
 	return bom, nil
@@ -149,7 +158,7 @@ func ReadCycloneDxReport(sbomFile string) (*cdx.BOM, error) {
 func GetPkgMap(sbomFile string) (map[string]pkg.Package, string, error) {
 	bom, err := ReadCycloneDxReport(sbomFile)
 	if err != nil {
-		fmt.Println(util.Red + "error while reading cyclonedx sbom")
+		log.Println("error while reading cyclonedx sbom")
 		return nil, "", err
 	}
 	var componentMap = make(map[string]pkg.Package)

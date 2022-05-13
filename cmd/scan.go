@@ -60,7 +60,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	scanCmd.PersistentFlags().StringVarP(&tarFile, "tarball", "t", "", "tar file path")
+	scanCmd.PersistentFlags().StringVarP(&tarFile, "tar", "t", "", "tarball file path")
 
 	scanCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "", "output format")
 
@@ -79,13 +79,13 @@ func scanStringImage(image string) {
 
 	v1Image, err := util.PullImage(image)
 	if err != nil {
-		fmt.Println("error while pulling image: ", err)
+		fmt.Println(util.Red+"error while pulling image: ", err)
 		log.Fatalln()
 	}
 
 	tempDir, err := util.SaveAndUntarImage(v1Image, image)
 	if err != nil {
-		fmt.Println("error while saving or untarring image: ", err)
+		fmt.Println(util.Red+"error while saving or untarring image: ", err)
 		log.Fatalln()
 	}
 	commonProcessing(tempDir, image)
@@ -96,7 +96,7 @@ func scanTarImage(tarFile string) {
 
 	tempDir, err := util.UntarImage(tarFile)
 	if err != nil {
-		fmt.Println("error while untarring tar image: ", err)
+		fmt.Println(util.Red+"error while untarring tar image: ", err)
 		log.Fatalln()
 	}
 	// log.Println("tempDir: ", tempDir)
@@ -106,35 +106,36 @@ func scanTarImage(tarFile string) {
 func commonProcessing(tempDir, image string) {
 	manifest, err := util.ReadImageManifest(tempDir)
 	if err != nil {
-		fmt.Println("error while reading image manifest: ", err)
+		fmt.Println(util.Red+"error while reading image manifest: ", err)
 		log.Fatalln()
 	}
 
 	configFile, err := util.ReadImageConfig(tempDir, manifest)
 	if err != nil {
-		fmt.Println("error while reading image config: ", err)
+		fmt.Println(util.Red+"error while reading image config: ", err)
 		log.Fatalln()
 	}
 
 	extractLayer, err := util.ExtractLayer(tempDir, manifest)
 	if err != nil {
-		fmt.Println("error while extracting layer: ", err)
+		fmt.Println(util.Red+"error while extracting layer: ", err)
 		log.Fatalln()
 	}
 
 	osRelease, err := util.IdentifyOsRelease(extractLayer)
 	if err != nil {
-		fmt.Println("error while identifying OS release: ", err)
+		fmt.Println(util.Red+"error while identifying OS release: ", err)
 		log.Fatalln()
 	}
 
 	pkgs, err := pkg.AnalyzePkg(osRelease, extractLayer)
 	if err != nil {
-		fmt.Println("error while fetching package information: ", err)
+		fmt.Println(util.Red+"error while fetching package information: ", err)
 		log.Fatalln()
 	}
 
-	util.RemoveDir(tempDir)
+	// cleanup
+	defer util.RemoveDir(tempDir)
 
 	log.Printf("Components identified by %v: %v\n", util.ApplicationName, len(pkgs))
 
@@ -147,6 +148,7 @@ func commonProcessing(tempDir, image string) {
 }
 
 func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, osRelease util.OsRelease) {
+	log.Println("Generating sbom...")
 	var err error
 	if strings.Contains(outputFormat, "cyclonedx") {
 		err = report.GenerateCycloneDxReport(image, outputFormat, configFile, pkgs, osRelease)
@@ -156,24 +158,24 @@ func generateSbom(image string, configFile v1.ConfigFile, pkgs []pkg.Package, os
 		err = errors.New("invalid output format")
 	}
 	if err != nil {
-		fmt.Println("error while generating report:", err)
+		fmt.Println(util.Red+"error while generating report:", err)
 		log.Fatalln()
 	}
 }
 
 func compareSbom(pkgs []pkg.Package) {
-
+	log.Println("Comparing...")
 	identifiedMap := pkg.GetPkgMap(pkgs)
 
 	readMap, toolName, err := report.GetPkgMap(compareFile)
 	if err != nil {
-		fmt.Println("error while reading json report", err)
+		fmt.Println(util.Red+"error while reading json report", err)
 		log.Fatalln()
 	}
 
 	err = pkg.ListComp(identifiedMap, readMap, toolName)
 	if err != nil {
-		fmt.Println("error while comparing sbom: ", err)
+		fmt.Println(util.Red+"error while comparing sbom: ", err)
 		log.Fatalln()
 	}
 }
