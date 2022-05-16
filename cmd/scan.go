@@ -23,14 +23,21 @@ var verbose bool
 var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Generate SBOM using image name or image tarfile",
-	Long: `scan command is used to generate sbom from a container image.
-Image name (with either tag or digest) or image tar can be passed as input`,
-	Example: `  Input image string
-	sbom scan my_image:my_tag
-	sbom scan my_image@my_digest
-
-  Input tarfile
-	sbom scan --tar /path/to/tarfile/my_image.tar`,
+	Long: `scan command can be used to generate sbom from a container image.
+It can also compare this sbom with sbom generated using some other tool.
+Image name (with either tag or digest) or image tarball can be passed as input.`,
+	Example: `  Possible Inputs
+	sbom scan alpine:latest
+	sbom scan alpine@sha256:51103b3f2993cbc1b45ff9d941b5d461484002792e02aa29580ec5282de719d4
+	sbom scan --tar /path/to/tarfile/my_image.tar
+	
+  Output Formats
+	sbom scan alpine:latest
+	sbom scan alpine:latest --output cyclonedx
+	sbom scan alpine:latest --output cyclonedx-json
+		
+  Compare SBOM
+	sbom scan alpine:latest --compare /path/to/cyclonedx-json/my_sbom.json`,
 	// Args: cobra.ExactArgs(1),
 	Args: func(cmd *cobra.Command, args []string) error {
 		if tarFile == "" && len(args) == 0 {
