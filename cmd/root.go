@@ -12,13 +12,19 @@ var rootCmd = &cobra.Command{
 	Use:   "sbom",
 	Short: "Generate SBOM for container images",
 	Long: `Sbom is a CLI tool to generate the Software Bill of Material (SBOM) 
-for container images. It takes image string or image tar as input.`,
-	Example: `  Input image string
-	sbom scan alpine:latest
-	sbom scan alpine@sha256:51103b3f2993cbc1b45ff9d941b5d461484002792e02aa29580ec5282de719d4
+for container images. It takes image string or image tarball as input.`,
+	Example: `  Possible Inputs
+	sbom scan my_image:my_tag			Get the image from dockerHub. If no tag specified, default is latest.
+	sbom scan my_image@my_digest			Get the image from dockerHub. No default value for tag.
+	sbom scan --tar /path/to/tarfile/my_image.tar	Docker tar or OCI tar.
 
-  Input tarfile
-	sbom scan --tar /path/to/tarfile/alpine.tar`,
+  Output Formats
+	sbom scan my_image:my_tag				Default output is human readable summary table
+	sbom scan my_image:my_tag --output cyclonedx		Generates CycloneDX xml output
+	sbom scan my_image:my_tag --output cyclonedx-json	Generates CycloneDX json output
+	
+  Compare SBOM
+	sbom scan my_image:my_tag --compare /path/to/cyclonedx-json/my_sbom.json	Generates SBOM and compares with CycloneDX json file provided`,
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
