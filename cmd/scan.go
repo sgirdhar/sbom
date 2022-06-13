@@ -180,7 +180,7 @@ func compareSbom(pkgs []pkg.Package) {
 		log.Fatalln()
 	}
 
-	err = pkg.ListComp(identifiedMap, readMap, toolName)
+	err = pkg.MapComp(identifiedMap, readMap, toolName)
 	if err != nil {
 		fmt.Println(util.Red+"error while comparing sbom: ", err)
 		log.Fatalln()

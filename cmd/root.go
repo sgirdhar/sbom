@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 for container images. It takes image string or image tarball as input.`,
 	Example: `  Possible Inputs
 	sbom scan my_image:my_tag			Get the image from dockerHub. If no tag specified, default is latest.
-	sbom scan my_image@my_digest			Get the image from dockerHub. No default value for tag.
+	sbom scan my_image@my_digest			Get the image from dockerHub. No default value for digest.
 	sbom scan --tar /path/to/tarfile/my_image.tar	Docker tar or OCI tar.
 
   Output Formats
